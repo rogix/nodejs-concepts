@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 
-const { v4: uuid, isUuid } = require("uuid");
+const { uuid, isUuid } = require("uuidv4");
 
 const app = express();
 
@@ -14,7 +14,7 @@ function validateRepositoryId(request, response, next) {
   const { id } = request.params;
 
   if (!isUuid(id)) {
-    return response.status(404).json({ error: "Invalid repository id" });
+    return response.status(400).json({ error: "Bad request" });
   }
 
   return next();
@@ -37,7 +37,20 @@ app.post("/repositories", (request, response) => {
 });
 
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+  const { id } = request.params;
+  const { url, title, techs } = request.body;
+
+  const repositoryIndex = repositories.findIndex((repo) => repo.id === id);
+
+  if (repositoryIndex < 0) {
+    return response.status(404).json({ error: "Repository not found" });
+  }
+
+  const repository = { id, url, title, techs };
+
+  repositories[repositoryIndex] = repository;
+
+  return response.json(repository);
 });
 
 app.delete("/repositories/:id", (request, response) => {
